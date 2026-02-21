@@ -1,0 +1,24 @@
+[Unit]
+Description=School Voting System — Flask + SocketIO backend
+After=network.target
+Documentation=file:///home/pi/voting-system/README.md
+
+[Service]
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/voting-system
+
+# Virtual-env interpreter — use_reloader=False is enforced inside app.py
+ExecStart=/home/pi/voting-system/venv/bin/python app.py
+
+# Restart on any failure; give 5 s before retry so systemd doesn't spin
+Restart=always
+RestartSec=5
+
+# Write logs to journald (also written to logs/app.log by the app itself)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=voting-backend
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Admin Login{% endblock %}
+{% block body_class %}admin-ui bg-light{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center vh-100">
+  <div class="card shadow" style="width: 380px;">
+    <div class="card-body p-4">
+      <h2 class="card-title text-center mb-4">🗳️ Admin Login</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="alert alert-danger">{{ message }}</div>
+      {% endfor %}
+      {% endwith %}
+
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Password</label>
+          <input type="password" name="password" class="form-control form-control-lg" autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 btn-lg">Login</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

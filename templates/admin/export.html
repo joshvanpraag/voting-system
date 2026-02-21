@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+{% block title %}Export — Admin{% endblock %}
+
+{% block admin_content %}
+<h2 class="mb-4">Export Data</h2>
+
+<!-- Session selector -->
+<form class="d-flex gap-2 mb-4" method="GET">
+  <select name="session_id" class="form-select" style="max-width: 450px;">
+    {% for s in sessions %}
+    <option value="{{ s.id }}" {{ 'selected' if s.id == selected_id else '' }}>
+      {{ s.question }} ({{ s.start_time[:10] }})
+    </option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary">Select</button>
+</form>
+
+{% if selected %}
+<div class="row g-4">
+
+  <!-- CSV -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header"><h5 class="mb-0">📥 CSV Export</h5></div>
+      <div class="card-body d-flex flex-column">
+        <p>Download all votes for <strong>{{ selected.question }}</strong> as a CSV file.</p>
+        <p class="text-muted small">
+          Includes a Summary section (option counts + percentages) and a
+          Detail section (one row per vote with timestamp and option).
+          No card UIDs — privacy-safe.
+        </p>
+        <div class="mt-auto">
+          <a href="/admin/export/csv?session_id={{ selected_id }}"
+             class="btn btn-success btn-lg">
+            Download CSV
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Sheets -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header"><h5 class="mb-0">📊 Google Sheets Sync</h5></div>
+      <div class="card-body d-flex flex-column">
+        <p>Push results to Google Sheets.</p>
+        <p class="text-muted small">
+          Overwrites the <strong>Summary</strong> and <strong>Detail</strong> tabs
+          in your configured spreadsheet. Configure the spreadsheet ID under
+          <a href="/admin/settings">Settings</a>.
+        </p>
+        <div class="mt-auto">
+          <button id="sheets-btn" class="btn btn-primary btn-lg"
+                  onclick="syncSheets({{ selected_id }})">
+            Sync to Google Sheets
+          </button>
+          <div id="sheets-status" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% else %}
+<p class="text-muted">No sessions available. <a href="/admin/sessions/new">Create one.</a></p>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function syncSheets(sessionId) {
+    const btn    = document.getElementById('sheets-btn');
+    const status = document.getElementById('sheets-status');
+    btn.disabled       = true;
+    btn.textContent    = 'Syncing…';
+    status.innerHTML   = '';
+
+    const body = new FormData();
+    body.append('session_id', sessionId);
+
+    fetch('/admin/export/sheets', { method: 'POST', body: body })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          status.innerHTML = '<div class="alert alert-success mb-0">✅ Synced successfully! Total votes: <strong>' + data.total + '</strong></div>';
+        } else {
+          status.innerHTML = '<div class="alert alert-danger mb-0">❌ Error: ' + (data.error || 'Unknown error') + '</div>';
+        }
+      })
+      .catch(err => {
+        status.innerHTML = '<div class="alert alert-danger mb-0">Network error: ' + err + '</div>';
+      })
+      .finally(() => {
+        btn.disabled    = false;
+        btn.textContent = 'Sync to Google Sheets';
+      });
+  }
+</script>
+{% endblock %}

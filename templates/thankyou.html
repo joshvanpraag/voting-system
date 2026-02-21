@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Thank You! — School Vote{% endblock %}
+{% block body_class %}kiosk-screen bg-success text-white{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center min-vh-100 p-4">
+  <div class="text-center w-100" style="max-width: 920px;">
+
+    <h1 class="kiosk-heading mb-2">Thank you for voting! 🎉</h1>
+    <p class="kiosk-subheading mb-4" style="opacity:0.9;">
+      Here are the current results:
+    </p>
+
+    <div class="chart-container bg-white rounded-3 p-4 mb-4 shadow">
+      <canvas id="resultsChart"></canvas>
+    </div>
+
+    <p class="countdown-text">
+      Returning to home screen in <span id="countdown">{{ results_display_seconds }}</span> seconds…
+    </p>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const SESSION_ID      = {{ voting_session.id }};
+  const DISPLAY_SECONDS = {{ results_display_seconds }};
+
+  // ── Fetch results and render chart ──────────────────────────────────────
+  fetch('/results-data/' + SESSION_ID)
+    .then(r => r.json())
+    .then(data => {
+      const entries = Object.values(data.counts);
+      const labels  = entries.map(v => v.label);
+      const values  = entries.map(v => v.count);
+
+      const COLORS = [
+        'rgba(54, 162, 235, 0.85)',
+        'rgba(255, 99, 132, 0.85)',
+        'rgba(75, 192, 192, 0.85)',
+        'rgba(255, 206, 86, 0.85)',
+      ];
+
+      new Chart(document.getElementById('resultsChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Votes',
+            data:  values,
+            backgroundColor: COLORS.slice(0, values.length),
+            borderColor:     COLORS.slice(0, values.length).map(c => c.replace('0.85', '1')),
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              bodyFont:  { size: 22 },
+              titleFont: { size: 22 },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, font: { size: 20 } },
+            },
+            x: {
+              ticks: { font: { size: 20 } },
+            },
+          },
+        },
+      });
+    });
+
+  // ── Countdown + auto-redirect ────────────────────────────────────────────
+  let count = DISPLAY_SECONDS;
+  const el  = document.getElementById('countdown');
+  const timer = setInterval(function () {
+    count -= 1;
+    el.textContent = count;
+    if (count <= 0) {
+      clearInterval(timer);
+      window.location.href = '/';
+    }
+  }, 1000);
+</script>
+{% endblock %}

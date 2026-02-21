@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard — Admin{% endblock %}
+
+{% block admin_content %}
+<h2 class="mb-4">Dashboard</h2>
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="card text-bg-primary h-100">
+      <div class="card-body">
+        <h6 class="card-title">Active Session</h6>
+        <p class="card-text fw-semibold">
+          {% if active_session %}{{ active_session.question }}{% else %}None{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card text-bg-success h-100">
+      <div class="card-body">
+        <h6 class="card-title">Votes Cast (this session)</h6>
+        <p class="card-text display-5 fw-bold">{{ votes_today }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card text-bg-info h-100">
+      <div class="card-body">
+        <h6 class="card-title">Registered Cards</h6>
+        <p class="card-text display-5 fw-bold">{{ total_cards }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick actions -->
+<div class="d-flex gap-3 flex-wrap mb-4">
+  <a href="/admin/sessions/new" class="btn btn-primary">+ New Session</a>
+  <a href="/admin/cards"        class="btn btn-secondary">Manage Cards</a>
+  <a href="/admin/results"      class="btn btn-info text-white">View Results</a>
+  <a href="/admin/export"       class="btn btn-success">Export Data</a>
+</div>
+
+<!-- Active session details -->
+{% if active_session %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Active Session</h5>
+    <span class="badge bg-success">LIVE</span>
+  </div>
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Question</dt>
+      <dd class="col-sm-9">{{ active_session.question }}</dd>
+      <dt class="col-sm-3">Options</dt>
+      <dd class="col-sm-9">
+        <strong>A:</strong> {{ active_session.option_a }} &nbsp;
+        <strong>B:</strong> {{ active_session.option_b }}
+        {% if active_session.option_c %}
+        &nbsp;<strong>C:</strong> {{ active_session.option_c }}
+        {% endif %}
+        {% if active_session.option_d %}
+        &nbsp;<strong>D:</strong> {{ active_session.option_d }}
+        {% endif %}
+      </dd>
+      <dt class="col-sm-3">Opens</dt>
+      <dd class="col-sm-9">{{ active_session.start_time }}</dd>
+      <dt class="col-sm-3">Closes</dt>
+      <dd class="col-sm-9">{{ active_session.end_time }}</dd>
+    </dl>
+    <div class="mt-3">
+      <a href="/admin/sessions/{{ active_session.id }}/edit" class="btn btn-warning btn-sm">Edit Session</a>
+      <a href="/admin/results?session_id={{ active_session.id }}" class="btn btn-info btn-sm text-white">Live Results</a>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-warning">
+  No active session. <a href="/admin/sessions/new">Create one</a> to start voting.
+</div>
+{% endif %}
+{% endblock %}

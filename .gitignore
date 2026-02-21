@@ -1,0 +1,11 @@
+*.db
+*.db-wal
+*.db-shm
+*.log
+.secret_key
+credentials/google_service_account.json
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env

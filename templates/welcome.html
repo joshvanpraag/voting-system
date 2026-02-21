@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Tap Your Card — School Vote{% endblock %}
+{% block body_class %}kiosk-screen bg-primary text-white{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center vh-100 p-4">
+  <div class="text-center">
+    <div class="nfc-icon mb-4">📡</div>
+    <h1 class="kiosk-heading mb-3">School Vote!</h1>
+    {% if voting_session %}
+    <p class="kiosk-subheading mb-5" style="opacity:0.85;">{{ voting_session.question }}</p>
+    {% endif %}
+    <div class="mt-4">
+      <div class="tap-card-badge">Tap Your Card to Vote</div>
+    </div>
+  </div>
+</div>
+
+<!-- Error overlay: shown when card scan fails -->
+<div id="error-overlay" class="error-overlay d-none">
+  <div class="error-box">
+    <div class="error-icon">⚠️</div>
+    <p id="error-message" class="error-text"></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const socket = io('/kiosk');
+
+  socket.on('card_valid', function (data) {
+    window.location.href = data.redirect_url;
+  });
+
+  socket.on('card_error', function (data) {
+    showCardError(data.message);
+  });
+
+  function showCardError(msg) {
+    const overlay = document.getElementById('error-overlay');
+    document.getElementById('error-message').textContent = msg;
+    overlay.classList.remove('d-none');
+    setTimeout(function () {
+      overlay.classList.add('d-none');
+    }, {{ error_display_ms }});
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "admin/base.html" %}
+{% block title %}Results — Admin{% endblock %}
+
+{% block admin_content %}
+<h2 class="mb-4">Results</h2>
+
+<!-- Session selector -->
+<form class="d-flex gap-2 mb-4" method="GET">
+  <select name="session_id" class="form-select" style="max-width: 450px;">
+    {% for s in sessions %}
+    <option value="{{ s.id }}" {{ 'selected' if s.id == selected_id else '' }}>
+      {{ s.question }} ({{ s.start_time[:10] }})
+    </option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary">View</button>
+</form>
+
+{% if selected %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0">{{ selected.question }}</h5>
+      <small class="text-muted">{{ selected.start_time }} – {{ selected.end_time }}</small>
+    </div>
+    <span id="vote-badge" class="badge bg-primary fs-6">0 votes</span>
+  </div>
+  <div class="card-body">
+    <div style="max-width: 700px; margin: 0 auto;">
+      <canvas id="resultsChart"></canvas>
+    </div>
+
+    <!-- Option breakdown table -->
+    <div class="mt-4" id="results-table-wrap"></div>
+  </div>
+</div>
+{% else %}
+<p class="text-muted">No sessions available. <a href="/admin/sessions/new">Create one.</a></p>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if selected %}
+<script>
+  const SESSION_ID = {{ selected_id }};
+  let chart        = null;
+
+  function loadResults() {
+    fetch('/results-data/' + SESSION_ID)
+      .then(r => r.json())
+      .then(data => {
+        const entries = Object.entries(data.counts);  // [[opt, {label, count}], …]
+        const labels  = entries.map(([, v]) => v.label);
+        const values  = entries.map(([, v]) => v.count);
+        const total   = data.total;
+
+        document.getElementById('vote-badge').textContent = total + ' vote' + (total !== 1 ? 's' : '');
+
+        const COLORS = [
+          'rgba(54, 162, 235, 0.85)',
+          'rgba(255, 99, 132, 0.85)',
+          'rgba(75, 192, 192, 0.85)',
+          'rgba(255, 206, 86, 0.85)',
+        ];
+
+        if (chart) {
+          chart.data.labels = labels;
+          chart.data.datasets[0].data = values;
+          chart.update();
+        } else {
+          chart = new Chart(
+            document.getElementById('resultsChart').getContext('2d'),
+            {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: 'Votes',
+                  data:  values,
+                  backgroundColor: COLORS.slice(0, values.length),
+                  borderWidth: 2,
+                }],
+              },
+              options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                },
+              },
+            }
+          );
+        }
+
+        // Breakdown table
+        let rows = entries.map(([opt, v]) => {
+          const pct = total > 0 ? (v.count / total * 100).toFixed(1) : '0.0';
+          return `<tr><td><strong>${opt}</strong></td><td>${v.label}</td>
+                  <td>${v.count}</td><td>${pct}%</td></tr>`;
+        }).join('');
+        document.getElementById('results-table-wrap').innerHTML =
+          `<table class="table table-sm" style="max-width:500px;">
+            <thead><tr><th>Option</th><th>Label</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr class="table-dark"><td colspan="2"><strong>Total</strong></td>
+            <td><strong>${total}</strong></td><td></td></tr></tfoot>
+           </table>`;
+      });
+  }
+
+  loadResults();
+  // Auto-refresh every 10 s while admin is watching
+  const refreshTimer = setInterval(loadResults, 10000);
+</script>
+{% endif %}
+{% endblock %}

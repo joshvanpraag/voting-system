@@ -1,0 +1,136 @@
+{% extends "admin/base.html" %}
+{% block title %}Cards — Admin{% endblock %}
+
+{% block admin_content %}
+<h2 class="mb-4">RFID Cards</h2>
+
+<!-- Scan-to-Enroll panel -->
+<div class="card mb-4 border-primary">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">Enroll New Card</h5>
+  </div>
+  <div class="card-body">
+    <p class="text-muted mb-3">
+      Tap a card on the reader — the UID auto-fills below.
+      Add an optional label, then click <strong>Enroll</strong>.
+    </p>
+    <div class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">Card UID</label>
+        <input type="text" id="enroll-uid" class="form-control font-monospace"
+               placeholder="Tap card or type UID manually…">
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Label <span class="text-muted">(optional)</span></label>
+        <input type="text" id="enroll-label" class="form-control"
+               placeholder="e.g. Room 3 — Card 12">
+      </div>
+      <div class="col-md-2">
+        <button id="enroll-btn" class="btn btn-primary w-100" disabled>Enroll</button>
+      </div>
+    </div>
+    <div id="enroll-status" class="mt-3"></div>
+  </div>
+</div>
+
+<!-- Card list -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      Registered Cards
+      <span class="badge bg-secondary ms-2">{{ cards | length }}</span>
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>UID</th>
+            <th>Label</th>
+            <th>Enrolled</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="cards-table-body">
+          {% for card in cards %}
+          <tr class="{{ '' if card.is_active else 'table-secondary opacity-75' }}">
+            <td><code>{{ card.uid }}</code></td>
+            <td>{{ card.label or '—' }}</td>
+            <td>{{ card.enrolled_at }}</td>
+            <td>
+              {% if card.is_active %}
+              <span class="badge bg-success">Active</span>
+              {% else %}
+              <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if card.is_active %}
+              <form method="POST" action="/admin/cards/deactivate/{{ card.id }}" style="display:inline;"
+                    onsubmit="return confirm('Deactivate card {{ card.uid }}?');">
+                <button type="submit" class="btn btn-sm btn-danger">Deactivate</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted p-4">
+              No cards enrolled yet. Tap a card on the reader to begin.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const adminSocket  = io('/admin');
+  const uidInput     = document.getElementById('enroll-uid');
+  const labelInput   = document.getElementById('enroll-label');
+  const enrollBtn    = document.getElementById('enroll-btn');
+  const statusDiv    = document.getElementById('enroll-status');
+
+  // Enable enroll button whenever UID has content
+  uidInput.addEventListener('input', function () {
+    enrollBtn.disabled = !this.value.trim();
+  });
+
+  // Card tap → auto-fill UID
+  adminSocket.on('card_scan_raw', function (data) {
+    uidInput.value     = data.uid;
+    enrollBtn.disabled = false;
+    if (data.already_enrolled) {
+      statusDiv.innerHTML = '<div class="alert alert-warning mb-0">This card is already enrolled.</div>';
+    } else {
+      statusDiv.innerHTML = '<div class="alert alert-info mb-0">New card detected — add a label and click Enroll.</div>';
+    }
+  });
+
+  // Enrollment confirmed by server
+  adminSocket.on('enroll_success', function (data) {
+    statusDiv.innerHTML = '<div class="alert alert-success mb-0">✅ Enrolled: ' + data.uid + '</div>';
+    uidInput.value     = '';
+    labelInput.value   = '';
+    enrollBtn.disabled = true;
+    // Reload to show the new card in the list
+    setTimeout(() => location.reload(), 1500);
+  });
+
+  // Enroll button click → emit to server
+  enrollBtn.addEventListener('click', function () {
+    const uid   = uidInput.value.trim();
+    const label = labelInput.value.trim();
+    if (!uid) return;
+    adminSocket.emit('enroll_card', { uid: uid, label: label });
+    enrollBtn.disabled = true;
+    enrollBtn.textContent = 'Enrolling…';
+  });
+</script>
+{% endblock %}

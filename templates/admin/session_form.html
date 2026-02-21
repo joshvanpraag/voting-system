@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ action }} Session — Admin{% endblock %}
+
+{% block admin_content %}
+<h2 class="mb-4">{{ action }} Voting Session</h2>
+
+<div class="card" style="max-width: 800px;">
+  <div class="card-body">
+    <form method="POST">
+
+      <!-- Question -->
+      <div class="mb-4">
+        <label class="form-label fw-bold fs-5">
+          Question <span class="text-danger">*</span>
+        </label>
+        <input type="text" name="question" class="form-control form-control-lg"
+               value="{{ vs.question if vs else '' }}" required
+               placeholder="e.g. What is your favourite season?">
+      </div>
+
+      <!-- Options -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            Option A <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="option_a" class="form-control"
+                 value="{{ vs.option_a if vs else '' }}" required
+                 placeholder="First choice">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            Option B <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="option_b" class="form-control"
+                 value="{{ vs.option_b if vs else '' }}" required
+                 placeholder="Second choice">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            Option C <span class="text-muted fw-normal">(optional)</span>
+          </label>
+          <input type="text" name="option_c" class="form-control"
+                 value="{{ vs.option_c if vs and vs.option_c else '' }}"
+                 placeholder="Third choice">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            Option D <span class="text-muted fw-normal">(optional)</span>
+          </label>
+          <input type="text" name="option_d" class="form-control"
+                 value="{{ vs.option_d if vs and vs.option_d else '' }}"
+                 placeholder="Fourth choice">
+        </div>
+      </div>
+
+      <!-- Dates/times -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            Start Time <span class="text-danger">*</span>
+          </label>
+          <input type="datetime-local" name="start_time" class="form-control"
+                 value="{{ vs.start_time_html if vs else '' }}" required>
+          <div class="form-text">When voting opens on the kiosk.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">
+            End Time <span class="text-danger">*</span>
+          </label>
+          <input type="datetime-local" name="end_time" class="form-control"
+                 value="{{ vs.end_time_html if vs else '' }}" required>
+          <div class="form-text">When voting closes automatically.</div>
+        </div>
+      </div>
+
+      <!-- Active toggle (edit only) -->
+      {% if action == 'Edit' %}
+      <div class="mb-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch"
+                 name="is_active" id="is_active"
+                 {{ 'checked' if vs.is_active else '' }}>
+          <label class="form-check-label" for="is_active">
+            Session active (uncheck to disable without deleting)
+          </label>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">
+          {{ action }} Session
+        </button>
+        <a href="/admin/sessions" class="btn btn-secondary btn-lg">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

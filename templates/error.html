@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Oops — School Vote{% endblock %}
+{% block body_class %}kiosk-screen bg-warning{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center vh-100 p-4">
+  <div class="text-center">
+    <div style="font-size: clamp(4rem, 10vw, 6rem); margin-bottom: 1.5rem;">⚠️</div>
+    <h1 class="kiosk-heading text-dark mb-3">Oops!</h1>
+    <p class="kiosk-subheading text-dark mb-5">{{ message }}</p>
+    <p class="countdown-text text-dark">
+      Returning in <span id="countdown">{{ error_display_seconds }}</span> seconds…
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let count = {{ error_display_seconds }};
+  const el  = document.getElementById('countdown');
+  const timer = setInterval(function () {
+    count -= 1;
+    el.textContent = count;
+    if (count <= 0) {
+      clearInterval(timer);
+      window.location.href = '/';
+    }
+  }, 1000);
+</script>
+{% endblock %}
