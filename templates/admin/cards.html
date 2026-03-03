@@ -115,7 +115,11 @@
 
   // Enrollment confirmed by server
   adminSocket.on('enroll_success', function (data) {
-    statusDiv.innerHTML = '<div class="alert alert-success mb-0">✅ Enrolled: ' + data.uid + '</div>';
+    var alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success mb-0';
+    alertDiv.textContent = '✅ Enrolled: ' + data.uid;
+    statusDiv.innerHTML = '';
+    statusDiv.appendChild(alertDiv);
     uidInput.value     = '';
     labelInput.value   = '';
     enrollBtn.disabled = true;

@@ -119,15 +119,17 @@ def get_all_sessions():
 
 def create_session(question, option_a, option_b, option_c, option_d, start_time, end_time):
     conn = get_db()
-    with conn:
-        cursor = conn.execute(
-            """INSERT INTO sessions
-               (question, option_a, option_b, option_c, option_d, start_time, end_time)
-               VALUES (?,?,?,?,?,?,?)""",
-            (question, option_a, option_b, option_c or None, option_d or None, start_time, end_time),
-        )
-        return cursor.lastrowid
-    conn.close()
+    try:
+        with conn:
+            cursor = conn.execute(
+                """INSERT INTO sessions
+                   (question, option_a, option_b, option_c, option_d, start_time, end_time)
+                   VALUES (?,?,?,?,?,?,?)""",
+                (question, option_a, option_b, option_c or None, option_d or None, start_time, end_time),
+            )
+            return cursor.lastrowid
+    finally:
+        conn.close()
 
 
 def update_session(session_id, question, option_a, option_b, option_c, option_d,

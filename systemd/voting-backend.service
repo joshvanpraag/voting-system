@@ -9,7 +9,7 @@ Group=pi
 WorkingDirectory=/home/pi/voting-system
 
 # Virtual-env interpreter — use_reloader=False is enforced inside app.py
-ExecStart=/home/pi/voting-system/venv/bin/python app.py
+ExecStart=/home/pi/voting-system/venv/bin/python app.py --host 0.0.0.0
 
 # Restart on any failure; give 5 s before retry so systemd doesn't spin
 Restart=always

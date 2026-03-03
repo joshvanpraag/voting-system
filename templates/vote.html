@@ -15,8 +15,7 @@
       <div class="d-grid gap-4">
         {% for opt_key, opt_label in options %}
         <button type="submit" name="option" value="{{ opt_key }}"
-                class="btn btn-vote btn-outline-primary"
-                onclick="this.disabled=true; document.getElementById('vote-form').submit();">
+                class="btn btn-vote btn-outline-primary">
           <span class="option-letter">{{ opt_key }}</span>
           <span class="option-label">{{ opt_label }}</span>
         </button>
@@ -26,4 +25,12 @@
 
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.getElementById('vote-form').addEventListener('submit', function() {
+    this.querySelectorAll('button').forEach(b => b.disabled = true);
+  });
+</script>
 {% endblock %}

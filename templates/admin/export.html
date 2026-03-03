@@ -86,11 +86,19 @@
         if (data.success) {
           status.innerHTML = '<div class="alert alert-success mb-0">✅ Synced successfully! Total votes: <strong>' + data.total + '</strong></div>';
         } else {
-          status.innerHTML = '<div class="alert alert-danger mb-0">❌ Error: ' + (data.error || 'Unknown error') + '</div>';
+          var errDiv = document.createElement('div');
+          errDiv.className = 'alert alert-danger mb-0';
+          errDiv.textContent = '❌ Error: ' + (data.error || 'Unknown error');
+          status.innerHTML = '';
+          status.appendChild(errDiv);
         }
       })
       .catch(err => {
-        status.innerHTML = '<div class="alert alert-danger mb-0">Network error: ' + err + '</div>';
+        var errDiv = document.createElement('div');
+        errDiv.className = 'alert alert-danger mb-0';
+        errDiv.textContent = 'Network error: ' + err;
+        status.innerHTML = '';
+        status.appendChild(errDiv);
       })
       .finally(() => {
         btn.disabled    = false;
