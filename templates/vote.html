@@ -30,7 +30,8 @@
 {% block extra_scripts %}
 <script>
   document.getElementById('vote-form').addEventListener('submit', function() {
-    this.querySelectorAll('button').forEach(b => b.disabled = true);
+    var buttons = this.querySelectorAll('button');
+    setTimeout(function() { buttons.forEach(b => b.disabled = true); }, 0);
   });
 </script>
 {% endblock %}
