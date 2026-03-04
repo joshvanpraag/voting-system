@@ -75,12 +75,24 @@ The PN532 HAT has a row of holes along one edge that line up with the metal pins
 4. Press the HAT down firmly and evenly until it is fully seated. You should feel it click into place and the HAT will sit flat against the Pi. It takes more force than you expect — push firmly.
 5. **Check that every pin went into a hole and none are bent sideways.** If any pin is bent, gently straighten it with a fingernail before continuing.
 
-**Important — set the HAT's jumpers to I2C mode:**
-The PN532 HAT has tiny plastic "jumpers" (small black rectangular clips) on the board. Check the label printed on the HAT near the jumpers. You need to set it to **I2C mode**. The jumper positions for I2C are typically:
+**Important — set the HAT's jumpers/switches to I2C mode:**
+
+**If you have the Waveshare PN532 NFC HAT** (the most common model sold on Amazon):
+1. **DIP switches** (a small row of tiny slide switches): set **SCL** and **SDA** to **ON**. All other switches should be **OFF**.
+2. **Jumper caps** (small black rectangular clips on pairs of pins):
+   - **I0** → connect to **H** (high)
+   - **I1** → connect to **L** (low)
+3. **Additional jumper wires** (if your HAT has pin headers labeled RSTPDN and INT0):
+   - **RSTPDN** → connect to **D20**
+   - **INT0** → connect to **D16**
+
+> If you have a different PN532 HAT variant, check the Waveshare wiki (search "Waveshare PN532 NFC HAT wiki") or the instruction sheet that came with your HAT for the correct I2C jumper positions.
+
+**If your HAT has a different layout:** look for labels printed on the board near the jumpers. You need to set it to **I2C mode**. The jumper positions for I2C are typically:
 - SCL jumper: short the two pins labeled **SCL**
 - SDA jumper: short the two pins labeled **SDA**
 
-Your HAT should come with a small sheet showing the jumper positions. If the HAT has a switch instead of jumpers, slide it to the position labeled **I2C**.
+If the HAT has a switch instead of jumpers, slide it to the position labeled **I2C**.
 
 ### Step 3B — Connect the Touchscreen
 
@@ -249,7 +261,7 @@ This step checks that the NFC HAT is properly connected and the Pi can "see" it.
 
 ## 8. Copy the Voting System Files to the Pi
 
-The voting system files are currently on your Windows computer in the folder `C:\Users\joshv\voting-system\`. You need to copy them to the Raspberry Pi.
+The voting system files are currently on your Windows computer in the folder `C:\Users\<YourUsername>\voting-system\`. You need to copy them to the Raspberry Pi.
 
 The easiest method is a USB drive.
 
@@ -257,7 +269,7 @@ The easiest method is a USB drive.
 
 1. Plug a USB drive into your Windows computer.
 2. Open **File Explorer** (the folder icon in the taskbar).
-3. Navigate to `C:\Users\joshv\` — you should see the `voting-system` folder.
+3. Navigate to `C:\Users\<YourUsername>\` — you should see the `voting-system` folder.
 4. Right-click the `voting-system` folder and click **Copy**.
 5. In File Explorer, click on your USB drive on the left side.
 6. Right-click in the empty space on the USB drive and click **Paste**.
@@ -301,7 +313,7 @@ Open the Terminal and type the following commands one at a time. After each one,
 
 Install system tools:
 ```
-sudo apt install -y unclutter chromium-browser
+sudo apt install -y unclutter chromium
 ```
 This installs the Chromium web browser (for the kiosk screen) and `unclutter` (which hides the mouse cursor). This may take a few minutes.
 
@@ -394,18 +406,15 @@ Start the server:
 python app.py
 ```
 
+> **Tip:** If you want to test from another computer on the same network, run `python app.py --host 0.0.0.0` instead. This allows connections from other devices, not just the Pi itself.
+
 You will see log messages appear:
 ```
 INFO nfc_reader: PN532 ready at I2C 0x24
 INFO app: Starting server on 127.0.0.1:5000
 ```
 
-Now open the **Chromium** browser on the Pi:
-- Click the **Globe** icon in the taskbar, or go to the Raspberry Pi menu → Internet → Chromium Web Browser.
-- In the address bar, type `http://127.0.0.1:5000` and press Enter.
-- You should see a blue screen that says **"School Vote! Tap Your Card to Vote."** ✅
-
-Open the admin panel by typing `http://127.0.0.1:5000/admin` in the address bar. Log in with the password you set during setup.
+Open the **Chromium** browser on the Pi and go to `http://127.0.0.1:5000/admin`. Log in with the password you set during setup.
 
 **Create a test voting session:**
 1. Click **Sessions** in the top navigation bar.
@@ -419,7 +428,8 @@ Open the admin panel by typing `http://127.0.0.1:5000/admin` in the address bar.
    - End Time: a time several hours from now
 4. Click **Create Session**.
 
-Go back to `http://127.0.0.1:5000` — the welcome screen should now show the question.
+Now open the kiosk welcome screen by navigating to `http://127.0.0.1:5000`:
+- You should see a blue screen that says **"School Vote! Tap Your Card to Vote."** with your question displayed. ✅
 
 **Enroll a test card:**
 1. In the admin panel, click **Cards**.
@@ -520,7 +530,7 @@ The long string of letters and numbers between `/d/` and `/edit` is the **Spread
 1. Open the admin panel (`http://127.0.0.1:5000/admin`).
 2. Click **Settings** in the top navigation.
 3. Paste the Spreadsheet ID into the field.
-4. Check the box **Enable Google Sheets sync**.
+4. Check the box **Enable automatic Google Sheets sync**.
 5. Click **Save Settings**.
 
 From now on, after each vote the system will automatically update the Google Sheet in the background.
@@ -619,9 +629,9 @@ Before putting the kiosk in front of students, work through this checklist. Each
 - [ ] **NFC reader detected** — open Terminal, type `i2cdetect -y 1`, confirm a number appears in the grid.
 - [ ] **Card enrollment works** — Admin → Cards, tap a card, UID fills in, click Enroll, card appears in the list.
 - [ ] **Voting works** — tap an enrolled card on the welcome screen, choose an answer, see the results bar chart, watch it return to the welcome screen after 15 seconds.
-- [ ] **Duplicate vote is blocked** — tap the same card again immediately after voting, see the "Already voted" error message for 5 seconds.
+- [ ] **Duplicate vote is blocked** — tap the same card again immediately after voting, see the "You have already voted this week!" error message for 5 seconds.
 - [ ] **Unregistered card is blocked** — tap a card that has NOT been enrolled, see the "Card not registered" message.
-- [ ] **Session time works** — create a session with an end time in the past, confirm the welcome screen shows the "Voting Closed" screen instead of the question.
+- [ ] **Session time works** — create a session with an end time in the past, confirm the welcome screen shows the "Voting is Closed" screen instead of the question.
 - [ ] **CSV export works** — Admin → Export, click Download CSV, open the file, confirm it shows the correct votes.
 - [ ] **Screen does not go to sleep** — leave the Pi on and untouched for 15 minutes, confirm the screen stays on.
 - [ ] **Auto-start works** — unplug the power, wait 10 seconds, plug it back in, confirm the kiosk screen comes back on its own.
@@ -637,7 +647,7 @@ The admin panel is accessed from any browser (on the Pi itself or on another com
 From the Pi: open Chromium and go to `http://127.0.0.1:5000/admin`
 From another computer on the same network: go to `http://votingkiosk.local:5000/admin`
 
-> **Note:** To access the admin panel from another computer, you may first need to find the Pi's IP address by opening Terminal on the Pi and typing `hostname -I`.
+> **Note:** To access the admin panel from another computer, the server must be listening on all interfaces (`--host 0.0.0.0`). The systemd service file already includes this flag. If you are running manually, use `python app.py --host 0.0.0.0`. You may also need to find the Pi's IP address by opening Terminal on the Pi and typing `hostname -I`.
 
 1. Log in with your admin password.
 2. Click **Sessions** in the top navigation bar.
