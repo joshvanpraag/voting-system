@@ -215,6 +215,26 @@ def results_data(session_id):
     total  = sum(v['count'] for v in counts.values())
     return jsonify({'counts': counts, 'total': total})
 
+# ─────────────────────────────────────────────────────────────
+# DEV ROUTE (added for CSS testing)
+# Open http://localhost:5000/dev-vote
+# ─────────────────────────────────────────────────────────────
+@app.route('/dev-vote')
+def dev_vote():
+    fake_session = {
+        'question': 'Which mascot should our school choose?',
+        'option_a': 'Freddie',
+        'option_b': 'Almie',
+        'option_c': 'Hammie',
+        'option_d': 'Dunno',
+    }
+
+    return render_template(
+        'vote.html',
+        voting_session=fake_session,
+        options=_build_options(fake_session),
+        token='dev-token'
+    )
 
 # ── Admin — auth ──────────────────────────────────────────────────────────────
 
