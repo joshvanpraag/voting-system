@@ -2,6 +2,51 @@
 {% block title %}Admin Login{% endblock %}
 {% block body_class %}admin-ui bg-light{% endblock %}
 
+{% block extra_head %}
+<style>
+  #osk {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #2b2b2b;
+    padding: 10px 8px 14px;
+    z-index: 1000;
+    display: none;
+  }
+  #osk .osk-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+  #osk button {
+    height: 52px;
+    min-width: 44px;
+    padding: 0 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background: #555;
+    color: #fff;
+    cursor: pointer;
+    flex: 1;
+    max-width: 60px;
+    touch-action: manipulation;
+  }
+  #osk button:active { background: #888; }
+  #osk button.osk-wide  { max-width: 90px; }
+  #osk button.osk-space { max-width: 260px; }
+  #osk button.osk-action { background: #0d6efd; }
+  #osk button.osk-shift  { background: #444; }
+  #osk button.osk-shift.active { background: #0d6efd; }
+
+  /* push card up when keyboard is open */
+  body.osk-open .d-flex { align-items: flex-start; padding-top: 40px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex align-items-center justify-content-center vh-100">
   <div class="card shadow" style="width: 380px;">
@@ -14,14 +59,122 @@
       {% endfor %}
       {% endwith %}
 
-      <form method="POST">
+      <form method="POST" id="login-form">
         <div class="mb-3">
           <label class="form-label fw-semibold">Password</label>
-          <input type="password" name="password" class="form-control form-control-lg" autofocus>
+          <input type="password" name="password" id="osk-input"
+                 class="form-control form-control-lg" autocomplete="current-password" readonly>
         </div>
         <button type="submit" class="btn btn-primary w-100 btn-lg">Login</button>
       </form>
     </div>
   </div>
 </div>
+
+<!-- On-screen keyboard -->
+<div id="osk">
+  <div class="osk-row" id="osk-row-1"></div>
+  <div class="osk-row" id="osk-row-2"></div>
+  <div class="osk-row" id="osk-row-3"></div>
+  <div class="osk-row" id="osk-row-4"></div>
+  <div class="osk-row" id="osk-row-5"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  var input   = document.getElementById('osk-input');
+  var osk     = document.getElementById('osk');
+  var shifted = false;
+
+  var rows = [
+    ['1','2','3','4','5','6','7','8','9','0'],
+    ['q','w','e','r','t','y','u','i','o','p'],
+    ['a','s','d','f','g','h','j','k','l'],
+    ['SHIFT','z','x','c','v','b','n','m','⌫'],
+    ['SPACE','ENTER']
+  ];
+
+  var shiftMap = {
+    '1':'!','2':'@','3':'#','4':'$','5':'%',
+    '6':'^','7':'&','8':'*','9':'(','0':')'
+  };
+
+  rows.forEach(function (keys, i) {
+    var row = document.getElementById('osk-row-' + (i + 1));
+    keys.forEach(function (key) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.key = key;
+
+      if (key === 'SHIFT') {
+        btn.textContent = '⇧ Shift';
+        btn.className = 'osk-shift osk-wide';
+      } else if (key === '⌫') {
+        btn.textContent = '⌫';
+        btn.className = 'osk-wide osk-action';
+      } else if (key === 'SPACE') {
+        btn.textContent = 'Space';
+        btn.className = 'osk-space';
+      } else if (key === 'ENTER') {
+        btn.textContent = 'Login ↵';
+        btn.className = 'osk-wide osk-action';
+      } else {
+        btn.textContent = key;
+      }
+
+      btn.addEventListener('click', function () { handleKey(key); });
+      row.appendChild(btn);
+    });
+  });
+
+  function handleKey(key) {
+    if (key === 'SHIFT') {
+      shifted = !shifted;
+      updateShiftDisplay();
+      return;
+    }
+    if (key === '⌫') {
+      input.value = input.value.slice(0, -1);
+      return;
+    }
+    if (key === 'SPACE') {
+      input.value += ' ';
+      return;
+    }
+    if (key === 'ENTER') {
+      document.getElementById('login-form').submit();
+      return;
+    }
+    var char = shifted ? (shiftMap[key] || key.toUpperCase()) : key;
+    input.value += char;
+    if (shifted) { shifted = false; updateShiftDisplay(); }
+  }
+
+  function updateShiftDisplay() {
+    var shiftBtn = osk.querySelector('[data-key="SHIFT"]');
+    if (shiftBtn) shiftBtn.classList.toggle('active', shifted);
+    osk.querySelectorAll('button[data-key]').forEach(function (btn) {
+      var k = btn.dataset.key;
+      if (k.length === 1 && k >= 'a' && k <= 'z') {
+        btn.textContent = shifted ? k.toUpperCase() : k;
+      } else if (shiftMap[k]) {
+        btn.textContent = shifted ? shiftMap[k] : k;
+      }
+    });
+  }
+
+  // Show keyboard when input is tapped
+  input.addEventListener('click', function () {
+    osk.style.display = 'block';
+    document.body.classList.add('osk-open');
+  });
+
+  // Hide keyboard when Login button is clicked (not via Enter key)
+  document.querySelector('#login-form .btn-primary').addEventListener('click', function () {
+    osk.style.display = 'none';
+  });
+})();
+</script>
 {% endblock %}
