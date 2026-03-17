@@ -159,9 +159,10 @@ body.kiosk-screen {
   position: fixed;
   bottom: 0;
   right: 0;
-  width: 72px;
-  height: 72px;
+  width: 120px;
+  height: 120px;
   z-index: 900;
+  touch-action: manipulation;
 }
 
 /* ── Admin UI (non-kiosk pages) ─────────────────────── */
