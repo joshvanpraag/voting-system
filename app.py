@@ -12,7 +12,7 @@ import logging
 import argparse
 import secrets
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import (
     Flask, render_template, redirect, url_for,
@@ -298,13 +298,19 @@ def admin_sessions_new():
 
         if not all([question, option_a, option_b, start_time, end_time]):
             flash('Please fill in all required fields.', 'error')
-            return render_template('admin/session_form.html', vs=None, action='Create')
+            now = datetime.now()
+            return render_template('admin/session_form.html', vs=None, action='Create',
+                                   default_start=now.strftime('%Y-%m-%dT%H:%M'),
+                                   default_end=(now + timedelta(days=7)).strftime('%Y-%m-%dT%H:%M'))
 
         db.create_session(question, option_a, option_b, option_c, option_d, start_time, end_time)
         flash('Session created!', 'success')
         return redirect(url_for('admin_sessions'))
 
-    return render_template('admin/session_form.html', vs=None, action='Create')
+    now = datetime.now()
+    return render_template('admin/session_form.html', vs=None, action='Create',
+                           default_start=now.strftime('%Y-%m-%dT%H:%M'),
+                           default_end=(now + timedelta(days=7)).strftime('%Y-%m-%dT%H:%M'))
 
 
 @app.route('/admin/sessions/<int:session_id>/edit', methods=['GET', 'POST'])

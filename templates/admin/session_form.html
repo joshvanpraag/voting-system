@@ -103,7 +103,7 @@
             Start Time <span class="text-danger">*</span>
           </label>
           <input type="datetime-local" name="start_time" class="form-control"
-                 value="{{ vs.start_time_html if vs else '' }}" required>
+                 value="{{ vs.start_time_html if vs else default_start }}" required>
           <div class="form-text">When voting opens on the kiosk.</div>
         </div>
         <div class="col-md-6">
@@ -111,7 +111,7 @@
             End Time <span class="text-danger">*</span>
           </label>
           <input type="datetime-local" name="end_time" class="form-control"
-                 value="{{ vs.end_time_html if vs else '' }}" required>
+                 value="{{ vs.end_time_html if vs else default_end }}" required>
           <div class="form-text">When voting closes automatically.</div>
         </div>
       </div>
@@ -180,7 +180,7 @@
     ['q','w','e','r','t','y','u','i','o','p'],
     ['a','s','d','f','g','h','j','k','l'],
     ['SHIFT','z','x','c','v','b','n','m','⌫'],
-    ['SPACE','✕ Close']
+    ['?','-',"'",'SPACE','✕ Close']
   ];
 
   var shiftMap = {
