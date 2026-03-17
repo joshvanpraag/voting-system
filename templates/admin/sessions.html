@@ -35,10 +35,16 @@
               <span class="badge bg-secondary">Disabled</span>
               {% endif %}
             </td>
-            <td class="d-flex gap-1">
+            <td>
+              <div class="d-flex gap-1 flex-wrap">
               <a href="/admin/sessions/{{ s.id }}/edit"       class="btn btn-sm btn-warning">Edit</a>
               <a href="/admin/results?session_id={{ s.id }}"   class="btn btn-sm btn-info text-white">Results</a>
               <a href="/admin/export?session_id={{ s.id }}"    class="btn btn-sm btn-success">Export</a>
+              <form method="POST" action="/admin/sessions/{{ s.id }}/delete"
+                    onsubmit="return confirm('Permanently delete this session and all its votes?');">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+              </div>
             </td>
           </tr>
           {% else %}

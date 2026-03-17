@@ -214,6 +214,15 @@ def reactivate_card(card_id):
     conn.close()
 
 
+def delete_session(session_id):
+    conn = get_db()
+    with conn:
+        conn.execute("DELETE FROM vote_tracker WHERE session_id=?", (session_id,))
+        conn.execute("DELETE FROM votes WHERE session_id=?", (session_id,))
+        conn.execute("DELETE FROM sessions WHERE id=?", (session_id,))
+    conn.close()
+
+
 def reset_votes(session_id):
     """Delete all votes and vote_tracker entries for a session."""
     conn = get_db()
