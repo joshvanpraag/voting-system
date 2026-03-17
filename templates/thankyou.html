@@ -3,7 +3,7 @@
 {% block body_class %}kiosk-screen bg-success text-white{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column align-items-center justify-content-center min-vh-100 p-4">
+<div class="d-flex flex-column align-items-center justify-content-center min-vh-100 p-3">
   <div class="text-center w-100" style="max-width: 920px;">
 
     <h1 class="kiosk-heading mb-2">Thank you for voting! 🎉</h1>
@@ -11,7 +11,7 @@
       Here are the current results:
     </p>
 
-    <div class="chart-container bg-white rounded-3 p-4 mb-4 shadow">
+    <div class="chart-container bg-white rounded-3 p-3 mb-2 shadow">
       <canvas id="resultsChart"></canvas>
     </div>
 
@@ -57,20 +57,21 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
-              bodyFont:  { size: 22 },
-              titleFont: { size: 22 },
+              bodyFont:  { size: 16 },
+              titleFont: { size: 16 },
             },
           },
           scales: {
             y: {
               beginAtZero: true,
-              ticks: { stepSize: 1, font: { size: 20 } },
+              ticks: { stepSize: 1, font: { size: 14 } },
             },
             x: {
-              ticks: { font: { size: 20 } },
+              ticks: { font: { size: 14 } },
             },
           },
         },

@@ -153,6 +153,17 @@ body.kiosk-screen {
   opacity: 0.82;
 }
 
+/* ── Hidden admin tap zone ──────────────────────────── */
+
+#admin-tap-zone {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 72px;
+  height: 72px;
+  z-index: 900;
+}
+
 /* ── Admin UI (non-kiosk pages) ─────────────────────── */
 
 body.admin-ui {
@@ -172,5 +183,45 @@ body.admin-ui {
   .option-letter {
     width:  52px;
     height: 52px;
+  }
+}
+
+/* ── 1024×600 kiosk screen optimizations ────────────── */
+
+@media (max-height: 640px) {
+  .kiosk-question {
+    font-size: clamp(1.4rem, 3.2vw, 2rem);
+    margin-bottom: 0.75rem !important;
+  }
+
+  .btn-vote {
+    padding: 0.75rem 1.25rem;
+    min-height: 80px;
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  }
+
+  .option-letter {
+    width:  44px;
+    height: 44px;
+    font-size: 1.5rem;
+  }
+
+  .kiosk-heading {
+    font-size: clamp(1.6rem, 4vw, 2.5rem);
+    margin-bottom: 0.25rem !important;
+  }
+
+  .kiosk-subheading {
+    font-size: clamp(0.9rem, 2.2vw, 1.4rem);
+    margin-bottom: 0.5rem !important;
+  }
+
+  .chart-container {
+    height: 330px;
+  }
+
+  .countdown-text {
+    font-size: 1rem;
+    margin-top: 0.25rem !important;
   }
 }

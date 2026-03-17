@@ -16,6 +16,9 @@
   </div>
 </div>
 
+<!-- Hidden admin tap zone: 5 taps in the bottom-right corner -->
+<div id="admin-tap-zone"></div>
+
 <!-- Error overlay: shown when card scan fails -->
 <div id="error-overlay" class="error-overlay d-none">
   <div class="error-box">
@@ -27,6 +30,17 @@
 
 {% block extra_scripts %}
 <script>
+  // ── Hidden admin tap zone ────────────────────────────────────────────────
+  (function () {
+    var taps = 0, lastTap = 0;
+    document.getElementById('admin-tap-zone').addEventListener('click', function () {
+      var now = Date.now();
+      taps = (now - lastTap < 3000) ? taps + 1 : 1;
+      lastTap = now;
+      if (taps >= 5) { window.location.href = '/admin/login'; }
+    });
+  })();
+
   const socket = io('/kiosk');
 
   socket.on('card_valid', function (data) {

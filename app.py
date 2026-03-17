@@ -569,4 +569,4 @@ if __name__ == '__main__':
     logger.info("Starting server on %s:%d", args.host, args.port)
     # use_reloader=False is MANDATORY — reloader spawns a second process
     # which starts a second NFC thread causing an I2C conflict.
-    socketio.run(app, host=args.host, port=args.port, debug=False, use_reloader=False)
+    socketio.run(app, host=args.host, port=args.port, debug=False, use_reloader=False, allow_unsafe_werkzeug=True)
