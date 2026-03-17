@@ -253,7 +253,7 @@ def admin_login():
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('admin_logged_in', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('welcome'))
 
 
 # ── Admin — dashboard ─────────────────────────────────────────────────────────
