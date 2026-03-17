@@ -33,12 +33,16 @@
   // ── Hidden admin tap zone ────────────────────────────────────────────────
   (function () {
     var taps = 0, lastTap = 0;
-    document.getElementById('admin-tap-zone').addEventListener('click', function () {
+    var zone = document.getElementById('admin-tap-zone');
+    function handleAdminTap(e) {
+      e.preventDefault();
       var now = Date.now();
       taps = (now - lastTap < 3000) ? taps + 1 : 1;
       lastTap = now;
       if (taps >= 5) { window.location.href = '/admin/login'; }
-    });
+    }
+    zone.addEventListener('touchstart', handleAdminTap, { passive: false });
+    zone.addEventListener('click', handleAdminTap);
   })();
 
   const socket = io('/kiosk');
