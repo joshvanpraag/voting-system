@@ -127,6 +127,7 @@ def create_session(question, option_a, option_b, option_c, option_d, start_time,
     conn = get_db()
     try:
         with conn:
+            conn.execute("UPDATE sessions SET is_active=0")
             cursor = conn.execute(
                 """INSERT INTO sessions
                    (question, option_a, option_b, option_c, option_d, start_time, end_time)
@@ -142,6 +143,8 @@ def update_session(session_id, question, option_a, option_b, option_c, option_d,
                    start_time, end_time, is_active):
     conn = get_db()
     with conn:
+        if is_active:
+            conn.execute("UPDATE sessions SET is_active=0 WHERE id != ?", (session_id,))
         conn.execute("""
             UPDATE sessions
             SET question=?, option_a=?, option_b=?, option_c=?, option_d=?,
