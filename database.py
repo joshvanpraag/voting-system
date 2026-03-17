@@ -222,24 +222,26 @@ def reset_votes(session_id):
 
 def delete_card(card_id):
     conn = get_db()
-    with conn:
+    try:
         card = conn.execute("SELECT uid FROM cards WHERE id=?", (card_id,)).fetchone()
         if card:
             uid = card['uid']
-            # Remove each vote this card cast from the votes table
             trackers = conn.execute(
                 "SELECT session_id, option FROM vote_tracker WHERE card_uid=? AND option IS NOT NULL",
                 (uid,)
             ).fetchall()
-            for t in trackers:
-                conn.execute(
-                    "DELETE FROM votes WHERE session_id=? AND option=? AND id=("
-                    "SELECT id FROM votes WHERE session_id=? AND option=? LIMIT 1)",
-                    (t['session_id'], t['option'], t['session_id'], t['option'])
-                )
-            conn.execute("DELETE FROM vote_tracker WHERE card_uid=?", (uid,))
-            conn.execute("DELETE FROM cards WHERE id=?", (card_id,))
-    conn.close()
+            with conn:
+                for t in trackers:
+                    vote = conn.execute(
+                        "SELECT id FROM votes WHERE session_id=? AND option=? LIMIT 1",
+                        (t['session_id'], t['option'])
+                    ).fetchone()
+                    if vote:
+                        conn.execute("DELETE FROM votes WHERE id=?", (vote['id'],))
+                conn.execute("DELETE FROM vote_tracker WHERE card_uid=?", (uid,))
+                conn.execute("DELETE FROM cards WHERE id=?", (card_id,))
+    finally:
+        conn.close()
 
 
 # ── Vote helpers ──────────────────────────────────────────────────────────────
