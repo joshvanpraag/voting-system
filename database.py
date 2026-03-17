@@ -61,6 +61,7 @@ def init_db():
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id INTEGER NOT NULL REFERENCES sessions(id),
                 card_uid   TEXT    NOT NULL,
+                option     TEXT,
                 voted_at   TEXT    NOT NULL DEFAULT (datetime('now', 'localtime')),
                 UNIQUE(session_id, card_uid)
             );
@@ -78,6 +79,11 @@ def init_db():
             INSERT OR IGNORE INTO settings (key, value) VALUES ('sheets_spreadsheet_id', '');
             INSERT OR IGNORE INTO settings (key, value) VALUES ('sheets_enabled', '0');
         """)
+        # Migration: add option column to vote_tracker if it doesn't exist yet
+        try:
+            conn.execute("ALTER TABLE vote_tracker ADD COLUMN option TEXT")
+        except Exception:
+            pass  # column already exists
     conn.close()
 
 
@@ -205,12 +211,33 @@ def reactivate_card(card_id):
     conn.close()
 
 
+def reset_votes(session_id):
+    """Delete all votes and vote_tracker entries for a session."""
+    conn = get_db()
+    with conn:
+        conn.execute("DELETE FROM votes WHERE session_id=?", (session_id,))
+        conn.execute("DELETE FROM vote_tracker WHERE session_id=?", (session_id,))
+    conn.close()
+
+
 def delete_card(card_id):
     conn = get_db()
     with conn:
-        row = conn.execute("SELECT uid FROM cards WHERE id=?", (card_id,)).fetchone()
-        if row:
-            conn.execute("DELETE FROM vote_tracker WHERE card_uid=?", (row['uid'],))
+        card = conn.execute("SELECT uid FROM cards WHERE id=?", (card_id,)).fetchone()
+        if card:
+            uid = card['uid']
+            # Remove each vote this card cast from the votes table
+            trackers = conn.execute(
+                "SELECT session_id, option FROM vote_tracker WHERE card_uid=? AND option IS NOT NULL",
+                (uid,)
+            ).fetchall()
+            for t in trackers:
+                conn.execute(
+                    "DELETE FROM votes WHERE session_id=? AND option=? AND id=("
+                    "SELECT id FROM votes WHERE session_id=? AND option=? LIMIT 1)",
+                    (t['session_id'], t['option'], t['session_id'], t['option'])
+                )
+            conn.execute("DELETE FROM vote_tracker WHERE card_uid=?", (uid,))
             conn.execute("DELETE FROM cards WHERE id=?", (card_id,))
     conn.close()
 
@@ -238,8 +265,8 @@ def record_vote(session_id, card_uid, option):
     try:
         with conn:
             cursor = conn.execute(
-                "INSERT OR IGNORE INTO vote_tracker (session_id, card_uid) VALUES (?,?)",
-                (session_id, card_uid),
+                "INSERT OR IGNORE INTO vote_tracker (session_id, card_uid, option) VALUES (?,?,?)",
+                (session_id, card_uid, option),
             )
             if cursor.rowcount == 0:
                 return False

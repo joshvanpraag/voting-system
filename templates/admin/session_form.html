@@ -96,6 +96,22 @@
       </div>
 
     </form>
+
+    {% if action == 'Edit' %}
+    <hr class="mt-4">
+    <div class="d-flex align-items-center gap-3">
+      <div>
+        <div class="fw-semibold text-danger">Reset All Votes</div>
+        <div class="text-muted small">Clears all votes and allows every card to vote again. Cannot be undone.</div>
+      </div>
+      <form method="POST" action="/admin/sessions/{{ vs.id }}/reset-votes"
+            onsubmit="return confirm('Reset ALL votes for this session? Every card will be able to vote again. This cannot be undone.');"
+            class="ms-auto flex-shrink-0">
+        <button type="submit" class="btn btn-danger">Reset Votes</button>
+      </form>
+    </div>
+    {% endif %}
+
   </div>
 </div>
 {% endblock %}

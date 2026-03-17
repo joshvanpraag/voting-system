@@ -340,6 +340,14 @@ def admin_sessions_edit(session_id):
     return render_template('admin/session_form.html', vs=vs, action='Edit')
 
 
+@app.route('/admin/sessions/<int:session_id>/reset-votes', methods=['POST'])
+@require_admin
+def admin_sessions_reset_votes(session_id):
+    db.reset_votes(session_id)
+    flash('All votes have been reset.', 'success')
+    return redirect(url_for('admin_sessions_edit', session_id=session_id))
+
+
 # ── Admin — cards ─────────────────────────────────────────────────────────────
 
 @app.route('/admin/cards')
