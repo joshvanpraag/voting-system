@@ -587,6 +587,8 @@ if __name__ == '__main__':
         print("Database not found. Run:  python app.py --setup")
         sys.exit(1)
 
+    db.init_db()  # apply any pending migrations (idempotent)
+
     from nfc_reader import init_nfc
     init_nfc(socketio)
 
