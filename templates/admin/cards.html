@@ -1,6 +1,49 @@
 {% extends "admin/base.html" %}
 {% block title %}Cards — Admin{% endblock %}
 
+{% block extra_head %}
+<style>
+  #osk {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #2b2b2b;
+    padding: 10px 8px 14px;
+    z-index: 1000;
+    display: none;
+  }
+  #osk .osk-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+  #osk button {
+    height: 52px;
+    min-width: 44px;
+    padding: 0 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background: #555;
+    color: #fff;
+    cursor: pointer;
+    flex: 1;
+    max-width: 60px;
+    touch-action: manipulation;
+  }
+  #osk button:active { background: #888; }
+  #osk button.osk-wide  { max-width: 90px; }
+  #osk button.osk-space { max-width: 260px; }
+  #osk button.osk-action { background: #0d6efd; }
+  #osk button.osk-shift  { background: #444; }
+  #osk button.osk-shift.active { background: #0d6efd; }
+  #osk-close { max-width: 80px; background: #888; }
+</style>
+{% endblock %}
+
 {% block admin_content %}
 <h2 class="mb-4">RFID Cards</h2>
 
@@ -17,13 +60,13 @@
     <div class="row g-3 align-items-end">
       <div class="col-md-5">
         <label class="form-label">Card UID</label>
-        <input type="text" id="enroll-uid" class="form-control font-monospace"
-               placeholder="Tap card or type UID manually…">
+        <input type="text" id="enroll-uid" class="form-control font-monospace osk-target"
+               placeholder="Tap card or type UID manually…" readonly>
       </div>
       <div class="col-md-5">
         <label class="form-label">Label <span class="text-muted">(optional)</span></label>
-        <input type="text" id="enroll-label" class="form-control"
-               placeholder="e.g. Room 3 — Card 12">
+        <input type="text" id="enroll-label" class="form-control osk-target"
+               placeholder="e.g. Room 3 — Card 12" readonly>
       </div>
       <div class="col-md-2">
         <button id="enroll-btn" class="btn btn-primary w-100" disabled>Enroll</button>
@@ -89,8 +132,118 @@
 </div>
 {% endblock %}
 
+<!-- On-screen keyboard -->
+<div id="osk">
+  <div class="osk-row" id="osk-row-1"></div>
+  <div class="osk-row" id="osk-row-2"></div>
+  <div class="osk-row" id="osk-row-3"></div>
+  <div class="osk-row" id="osk-row-4"></div>
+  <div class="osk-row" id="osk-row-5"></div>
+</div>
+
 {% block extra_scripts %}
 <script>
+  // ── On-screen keyboard ───────────────────────────────────────────────────
+  (function () {
+    var osk     = document.getElementById('osk');
+    var shifted = false;
+    var activeInput = null;
+
+    var rows = [
+      ['1','2','3','4','5','6','7','8','9','0'],
+      ['q','w','e','r','t','y','u','i','o','p'],
+      ['a','s','d','f','g','h','j','k','l'],
+      ['SHIFT','z','x','c','v','b','n','m','⌫'],
+      ['SPACE','✕ Close']
+    ];
+
+    var shiftMap = {
+      '1':'!','2':'@','3':'#','4':'$','5':'%',
+      '6':'^','7':'&','8':'*','9':'(','0':')'
+    };
+
+    rows.forEach(function (keys, i) {
+      var row = document.getElementById('osk-row-' + (i + 1));
+      keys.forEach(function (key) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.key = key;
+        if (key === 'SHIFT') {
+          btn.textContent = '⇧ Shift';
+          btn.className = 'osk-shift osk-wide';
+        } else if (key === '⌫') {
+          btn.textContent = '⌫';
+          btn.className = 'osk-wide osk-action';
+        } else if (key === 'SPACE') {
+          btn.textContent = 'Space';
+          btn.className = 'osk-space';
+        } else if (key === '✕ Close') {
+          btn.textContent = '✕ Close';
+          btn.id = 'osk-close';
+          btn.className = 'osk-wide';
+        } else {
+          btn.textContent = key;
+        }
+        btn.addEventListener('click', function () { handleKey(key); });
+        row.appendChild(btn);
+      });
+    });
+
+    function handleKey(key) {
+      if (!activeInput) return;
+      if (key === 'SHIFT') {
+        shifted = !shifted;
+        updateShiftDisplay();
+        return;
+      }
+      if (key === '⌫') {
+        activeInput.value = activeInput.value.slice(0, -1);
+        activeInput.dispatchEvent(new Event('input'));
+        return;
+      }
+      if (key === 'SPACE') { activeInput.value += ' '; return; }
+      if (key === '✕ Close') { hideOsk(); return; }
+      var char = shifted ? (shiftMap[key] || key.toUpperCase()) : key;
+      activeInput.value += char;
+      activeInput.dispatchEvent(new Event('input'));
+      if (shifted) { shifted = false; updateShiftDisplay(); }
+    }
+
+    function updateShiftDisplay() {
+      var shiftBtn = osk.querySelector('[data-key="SHIFT"]');
+      if (shiftBtn) shiftBtn.classList.toggle('active', shifted);
+      osk.querySelectorAll('button[data-key]').forEach(function (btn) {
+        var k = btn.dataset.key;
+        if (k.length === 1 && k >= 'a' && k <= 'z') {
+          btn.textContent = shifted ? k.toUpperCase() : k;
+        } else if (shiftMap[k]) {
+          btn.textContent = shifted ? shiftMap[k] : k;
+        }
+      });
+    }
+
+    function showOsk(input) {
+      activeInput = input;
+      osk.style.display = 'block';
+      var kbHeight = osk.offsetHeight;
+      document.body.style.paddingBottom = kbHeight + 'px';
+      setTimeout(function () {
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+
+    function hideOsk() {
+      osk.style.display = 'none';
+      document.body.style.paddingBottom = '';
+      activeInput = null;
+    }
+
+    document.querySelectorAll('.osk-target').forEach(function (input) {
+      input.addEventListener('click', function () { showOsk(input); });
+    });
+  })();
+
+  // ── Card enrollment ───────────────────────────────────────────────────────
   const adminSocket  = io('/admin');
   const uidInput     = document.getElementById('enroll-uid');
   const labelInput   = document.getElementById('enroll-label');
