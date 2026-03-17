@@ -42,13 +42,14 @@
   #osk button.osk-shift  { background: #444; }
   #osk button.osk-shift.active { background: #0d6efd; }
 
-  /* push card up when keyboard is open */
-  body.osk-open .d-flex { align-items: flex-start; padding-top: 40px; }
+  #login-container {
+    transition: height 0.15s ease;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-center vh-100">
+<div id="login-container" class="d-flex align-items-center justify-content-center" style="height:100vh;">
   <div class="card shadow" style="width: 380px;">
     <div class="card-body p-4">
       <h2 class="card-title text-center mb-4">🗳️ Admin Login</h2>
@@ -62,8 +63,8 @@
       <form method="POST" id="login-form">
         <div class="mb-3">
           <label class="form-label fw-semibold">Password</label>
-          <input type="password" name="password" id="osk-input"
-                 class="form-control form-control-lg" autocomplete="current-password" readonly>
+          <input type="text" name="password" id="osk-input"
+                 class="form-control form-control-lg" autocomplete="off" readonly>
         </div>
         <button type="submit" class="btn btn-primary w-100 btn-lg">Login</button>
       </form>
@@ -168,12 +169,14 @@
   // Show keyboard when input is tapped
   input.addEventListener('click', function () {
     osk.style.display = 'block';
-    document.body.classList.add('osk-open');
+    var kbHeight = osk.offsetHeight;
+    document.getElementById('login-container').style.height = 'calc(100vh - ' + kbHeight + 'px)';
   });
 
   // Hide keyboard when Login button is clicked (not via Enter key)
   document.querySelector('#login-form .btn-primary').addEventListener('click', function () {
     osk.style.display = 'none';
+    document.getElementById('login-container').style.height = '100vh';
   });
 })();
 </script>
