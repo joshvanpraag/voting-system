@@ -32,12 +32,20 @@
 <script>
   // ── Hidden admin tap zone ────────────────────────────────────────────────
   (function () {
-    var taps = 0, lastTap = 0;
-    document.getElementById('admin-tap-zone').addEventListener('click', function () {
+    var taps = 0, lastTap = 0, lastTouch = 0;
+    var zone = document.getElementById('admin-tap-zone');
+    function countTap() {
       var now = Date.now();
       taps = (now - lastTap < 3000) ? taps + 1 : 1;
       lastTap = now;
       if (taps >= 5) { window.location.href = '/admin/login'; }
+    }
+    zone.addEventListener('touchend', function () {
+      lastTouch = Date.now();
+      countTap();
+    });
+    zone.addEventListener('click', function () {
+      if (Date.now() - lastTouch > 500) { countTap(); }
     });
   })();
 
