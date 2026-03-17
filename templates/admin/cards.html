@@ -130,7 +130,6 @@
     </div>
   </div>
 </div>
-{% endblock %}
 
 <!-- On-screen keyboard -->
 <div id="osk">
@@ -140,6 +139,8 @@
   <div class="osk-row" id="osk-row-4"></div>
   <div class="osk-row" id="osk-row-5"></div>
 </div>
+
+{% endblock %}
 
 {% block extra_scripts %}
 <script>
@@ -239,7 +240,14 @@
     }
 
     document.querySelectorAll('.osk-target').forEach(function (input) {
-      input.addEventListener('click', function () { showOsk(input); });
+      var lastTouch = 0;
+      input.addEventListener('touchend', function () {
+        lastTouch = Date.now();
+        showOsk(input);
+      });
+      input.addEventListener('click', function () {
+        if (Date.now() - lastTouch > 500) { showOsk(input); }
+      });
     });
   })();
 
