@@ -208,7 +208,10 @@ def reactivate_card(card_id):
 def delete_card(card_id):
     conn = get_db()
     with conn:
-        conn.execute("DELETE FROM cards WHERE id=?", (card_id,))
+        row = conn.execute("SELECT uid FROM cards WHERE id=?", (card_id,)).fetchone()
+        if row:
+            conn.execute("DELETE FROM vote_tracker WHERE card_uid=?", (row['uid'],))
+            conn.execute("DELETE FROM cards WHERE id=?", (card_id,))
     conn.close()
 
 
