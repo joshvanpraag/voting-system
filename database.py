@@ -198,6 +198,20 @@ def deactivate_card(card_id):
     conn.close()
 
 
+def reactivate_card(card_id):
+    conn = get_db()
+    with conn:
+        conn.execute("UPDATE cards SET is_active=1 WHERE id=?", (card_id,))
+    conn.close()
+
+
+def delete_card(card_id):
+    conn = get_db()
+    with conn:
+        conn.execute("DELETE FROM cards WHERE id=?", (card_id,))
+    conn.close()
+
+
 # ── Vote helpers ──────────────────────────────────────────────────────────────
 
 def card_has_voted(uid, session_id):

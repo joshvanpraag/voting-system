@@ -356,6 +356,22 @@ def admin_cards_deactivate(card_id):
     return redirect(url_for('admin_cards'))
 
 
+@app.route('/admin/cards/reactivate/<int:card_id>', methods=['POST'])
+@require_admin
+def admin_cards_reactivate(card_id):
+    db.reactivate_card(card_id)
+    flash('Card reactivated.', 'success')
+    return redirect(url_for('admin_cards'))
+
+
+@app.route('/admin/cards/delete/<int:card_id>', methods=['POST'])
+@require_admin
+def admin_cards_delete(card_id):
+    db.delete_card(card_id)
+    flash('Card removed.', 'success')
+    return redirect(url_for('admin_cards'))
+
+
 # ── Admin — results ───────────────────────────────────────────────────────────
 
 @app.route('/admin/results')

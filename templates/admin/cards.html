@@ -110,12 +110,22 @@
               {% endif %}
             </td>
             <td>
+              <div class="d-flex gap-1 flex-wrap">
               {% if card.is_active %}
-              <form method="POST" action="/admin/cards/deactivate/{{ card.id }}" style="display:inline;"
+              <form method="POST" action="/admin/cards/deactivate/{{ card.id }}"
                     onsubmit="return confirm('Deactivate card {{ card.uid }}?');">
-                <button type="submit" class="btn btn-sm btn-danger">Deactivate</button>
+                <button type="submit" class="btn btn-sm btn-warning">Deactivate</button>
+              </form>
+              {% else %}
+              <form method="POST" action="/admin/cards/reactivate/{{ card.id }}">
+                <button type="submit" class="btn btn-sm btn-success">Reactivate</button>
               </form>
               {% endif %}
+              <form method="POST" action="/admin/cards/delete/{{ card.id }}"
+                    onsubmit="return confirm('Permanently delete card {{ card.uid }}? This cannot be undone.');">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+              </div>
             </td>
           </tr>
           {% else %}
