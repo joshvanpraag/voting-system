@@ -10,4 +10,30 @@
     <p class="kiosk-subheading" style="opacity: 0.75;">Please check back later.</p>
   </div>
 </div>
+
+<!-- Hidden admin tap zone: 5 taps in the bottom-right corner -->
+<div id="admin-tap-zone"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ── Hidden admin tap zone ────────────────────────────────────────────────
+  (function () {
+    var taps = 0, lastTap = 0, lastTouch = 0;
+    var zone = document.getElementById('admin-tap-zone');
+    function countTap() {
+      var now = Date.now();
+      taps = (now - lastTap < 3000) ? taps + 1 : 1;
+      lastTap = now;
+      if (taps >= 5) { window.location.href = '/admin/login'; }
+    }
+    zone.addEventListener('touchend', function () {
+      lastTouch = Date.now();
+      countTap();
+    });
+    zone.addEventListener('click', function () {
+      if (Date.now() - lastTouch > 500) { countTap(); }
+    });
+  })();
+</script>
 {% endblock %}
