@@ -35,7 +35,7 @@
     var buttons = this.querySelectorAll('button');
     var submitter = e.submitter;
     buttons.forEach(function(b) {
-      b.disabled = true;
+      if (b !== submitter) b.disabled = true;
       b.classList.remove('active');
     });
     if (submitter) {
