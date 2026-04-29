@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 from flask import (
     Flask, render_template, redirect, url_for,
-    request, session, jsonify, Response, flash,
+    request, session, jsonify, Response, flash, make_response,
 )
 from flask_socketio import SocketIO, emit
 import bcrypt
@@ -126,12 +126,14 @@ def vote(token):
     if db.card_has_voted(data['uid'], active['id']):
         return redirect(url_for('error_page', msg='already_voted'))
 
-    return render_template(
+    resp = make_response(render_template(
         'vote.html',
         voting_session=active,
         options=_build_options(active),
         token=token,
-    )
+    ))
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp
 
 
 @app.route('/submit-vote', methods=['POST'])

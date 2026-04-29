@@ -43,15 +43,32 @@
     }
   });
 
-  // Reset button state if the browser restores this page from the bfcache,
-  // which would otherwise briefly show the previously-tapped button as active.
+  // Clear button state BEFORE the page is frozen into bfcache so it is already
+  // clean if ever restored, eliminating any flash on restoration.
+  window.addEventListener('pagehide', function(e) {
+    if (e.persisted) {
+      var buttons = form.querySelectorAll('button');
+      buttons.forEach(function(b) {
+        b.style.transition = 'none';
+        b.disabled = false;
+        b.classList.remove('active');
+        b.blur();
+      });
+    }
+  });
+
+  // Belt-and-suspenders: also clean up on restoration in case the above missed anything.
   window.addEventListener('pageshow', function(e) {
     if (e.persisted) {
       var buttons = form.querySelectorAll('button');
       buttons.forEach(function(b) {
+        b.style.transition = 'none';
         b.disabled = false;
         b.classList.remove('active');
+        b.blur();
       });
+      void form.offsetHeight;
+      buttons.forEach(function(b) { b.style.transition = ''; });
     }
   });
 </script>
