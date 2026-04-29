@@ -43,15 +43,19 @@
     }
   });
 
-  // Reset button state if the browser restores this page from the bfcache,
-  // which would otherwise briefly show the previously-tapped button as active.
   window.addEventListener('pageshow', function(e) {
     if (e.persisted) {
       var buttons = form.querySelectorAll('button');
+      // Suppress Bootstrap's transition so the reset is instant, not a visible fade.
+      buttons.forEach(function(b) { b.style.transition = 'none'; });
+      void form.offsetHeight; // flush style
       buttons.forEach(function(b) {
         b.disabled = false;
         b.classList.remove('active');
+        b.blur(); // remove :focus blue glow
       });
+      void form.offsetHeight; // flush style
+      buttons.forEach(function(b) { b.style.transition = ''; });
     }
   });
 </script>
