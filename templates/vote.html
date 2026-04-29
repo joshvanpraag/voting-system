@@ -29,9 +29,30 @@
 
 {% block extra_scripts %}
 <script>
-  document.getElementById('vote-form').addEventListener('submit', function() {
+  var form = document.getElementById('vote-form');
+
+  form.addEventListener('submit', function(e) {
     var buttons = this.querySelectorAll('button');
-    setTimeout(function() { buttons.forEach(b => b.disabled = true); }, 0);
+    var submitter = e.submitter;
+    buttons.forEach(function(b) {
+      b.disabled = true;
+      b.classList.remove('active');
+    });
+    if (submitter) {
+      submitter.classList.add('active');
+    }
+  });
+
+  // Reset button state if the browser restores this page from the bfcache,
+  // which would otherwise briefly show the previously-tapped button as active.
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+      var buttons = form.querySelectorAll('button');
+      buttons.forEach(function(b) {
+        b.disabled = false;
+        b.classList.remove('active');
+      });
+    }
   });
 </script>
 {% endblock %}

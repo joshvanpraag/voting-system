@@ -30,7 +30,7 @@ SCAN_COOLDOWN   = 2.0  # seconds before the same card UID can trigger again
 RETRY_DELAY     = 5    # seconds to wait before reconnecting after an I2C error
 
 # ── Display timing ────────────────────────────────────────────────────────────
-RESULTS_DISPLAY_SECONDS = 15   # thankyou screen auto-return delay
+RESULTS_DISPLAY_SECONDS = 10   # thankyou screen auto-return delay
 ERROR_DISPLAY_SECONDS   = 5    # error overlay auto-hide delay
 
 # ── Logging ───────────────────────────────────────────────────────────────────
