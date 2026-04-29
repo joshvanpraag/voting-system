@@ -25,19 +25,14 @@
 
   </div>
 </div>
-
-<!-- Shown immediately after submission so the selected button state
-     is never visible to the next user while the server processes. -->
-<div id="submit-overlay" style="display:none;position:fixed;inset:0;background:white;z-index:9999;"></div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  var form    = document.getElementById('vote-form');
-  var overlay = document.getElementById('submit-overlay');
+  var form = document.getElementById('vote-form');
 
   form.addEventListener('submit', function(e) {
-    var buttons   = this.querySelectorAll('button');
+    var buttons = this.querySelectorAll('button');
     var submitter = e.submitter;
     buttons.forEach(function(b) {
       if (b !== submitter) b.disabled = true;
@@ -46,30 +41,17 @@
     if (submitter) {
       submitter.classList.add('active');
     }
-    // Two rAF calls = two frames (~33 ms) of visible feedback for the voter,
-    // then the overlay covers everything before the server responds.
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        overlay.style.display = 'block';
-      });
-    });
   });
 
+  // Reset button state if the browser restores this page from the bfcache,
+  // which would otherwise briefly show the previously-tapped button as active.
   window.addEventListener('pageshow', function(e) {
     if (e.persisted) {
-      // If bfcache restored the page while the overlay was up, hide it.
-      overlay.style.display = 'none';
       var buttons = form.querySelectorAll('button');
-      // Suppress Bootstrap's transition so the reset is instant, not a visible fade.
-      buttons.forEach(function(b) { b.style.transition = 'none'; });
-      void form.offsetHeight;
       buttons.forEach(function(b) {
         b.disabled = false;
         b.classList.remove('active');
-        b.blur();
       });
-      void form.offsetHeight;
-      buttons.forEach(function(b) { b.style.transition = ''; });
     }
   });
 </script>
