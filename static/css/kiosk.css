@@ -120,6 +120,12 @@ body.kiosk-screen {
 
 .btn-vote:active {
   transform: scale(0.97);
+  /* Override Bootstrap's solid-blue :active fill. A ghost/residual touch from the
+     previous voter would otherwise briefly flash the wrong button solid blue.
+     Buttons only turn solid blue when JS explicitly adds the .active class. */
+  background-color: transparent !important;
+  color: #0d6efd !important;
+  border-color: #0d6efd !important;
 }
 
 .option-letter {
