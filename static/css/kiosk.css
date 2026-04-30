@@ -118,12 +118,21 @@ body.kiosk-screen {
   z-index: 1;
 }
 
-.btn-vote:active,
-.btn-vote.active {
+.btn-vote:active {
   transform: scale(0.97);
   background-color: transparent !important;
   color: #0d6efd !important;
   border-color: #0d6efd !important;
+}
+
+/* On touch screens :hover is sticky — suppress it to prevent ghost-hover
+   from the previous voter's button showing as solid blue. */
+body.kiosk-screen .btn-vote:hover {
+  background-color: transparent !important;
+  color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .option-letter {
