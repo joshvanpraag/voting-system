@@ -43,6 +43,9 @@
     }
   });
 
+  // Prevent this page from being stored in bfcache at all.
+  window.addEventListener('beforeunload', function() {});
+
   // Clear button state BEFORE the page is frozen into bfcache so it is already
   // clean if ever restored, eliminating any flash on restoration.
   window.addEventListener('pagehide', function(e) {
