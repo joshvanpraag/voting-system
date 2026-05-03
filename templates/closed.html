@@ -27,7 +27,8 @@
       lastTap = now;
       if (taps >= 5) { window.location.href = '/admin/login'; }
     }
-    zone.addEventListener('touchend', function () {
+    zone.addEventListener('touchend', function (e) {
+      e.stopPropagation();
       lastTouch = Date.now();
       countTap();
     });
